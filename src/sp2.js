@@ -9,29 +9,27 @@ class BroadlinkDeviceSP2 extends BroadlinkDevice {
     setPower(state) {
         let packet = Buffer.alloc(16, 0);
         packet[0] = 2;
-        packet[4] = state ? 1 : 0;
+        packet[4] = state === 'on' ? 1 : 0;
         this._sendPacket(0x6a, packet);
     }
 
-    getPower(cb) {
-        if (cb) {
-            this.getPowerCallbackList.push(cb);
+    getPower(callback) {
+        if (callback) {
+            this.getPowerCallbackList.push(callback);
             let packet = Buffer.alloc(16, 0);
             packet[0] = 1;
             this._sendPacket(0x6a, packet);
         }
     }
 
-    _onPayloadReceived(payload) {
-        super._onPayloadReceived(payload);
-        if (payload[0] == 1) {
-            let info = {};
-            info.code = payload[4];
-            info.power = payload[4] == 1 ? 'on' : 'off';
+    _onPayloadReceived(command, errCode, payload) {
+        super._onPayloadReceived(command, errCode, payload);
+        if (errCode == 0 && payload[0] == 1) {
+            let state = payload[4] == 1 ? 'on' : 'off';
 
             let callback = this.getPowerCallbackList.shift();
             if (callback) {
-                callback(info);
+                callback(null, state);
             }
         }
     }

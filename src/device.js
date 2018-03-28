@@ -25,11 +25,8 @@ class BroadlinkDevice extends EventEmitter {
 
     _onMessage(message) {
         //错误码
-        const err = message[0x22] | (message[0x23] << 8);
-        if (err != 0) {
-            throw new Error('device error: ' + err);
-        };
-
+        const errCode = message[0x22] | (message[0x23] << 8);
+        
         //得到加密数据
         const encryptedPayload = Buffer.alloc(message.length - 0x38, 0);
         message.copy(encryptedPayload, 0, 0x38);
@@ -48,7 +45,7 @@ class BroadlinkDevice extends EventEmitter {
 
         //命令
         const command = message[0x26];
-        if (command == 0xe9) {
+        if (errCode == 0 && command == 0xe9) {
             this.key = Buffer.alloc(0x10, 0);
             payload.copy(this.key, 0, 0x04, 0x14);
 
@@ -58,7 +55,7 @@ class BroadlinkDevice extends EventEmitter {
             this.emit('ready', { id: this.id });
         }
         else {
-            this._onPayloadReceived(payload);
+            this._onPayloadReceived(command, errCode, payload);
         }
     }
 
@@ -116,12 +113,11 @@ class BroadlinkDevice extends EventEmitter {
 
         this.socket.send(packet, 0, packet.length, this.port, this.address, (err, bytes) => {
             if (err) {
-                // console.log('\x1b[33m[DEBUG]\x1b[0m send packet error', err)
                 throw err;
             }
-            // else {
-            //     console.log('\x1b[33m[DEBUG]\x1b[0m successfuly sent packet - bytes: ', bytes);
-            // }
+            else {
+                // console.log('\x1b[33m[DEBUG]\x1b[0m successfuly sent packet - bytes: ', bytes);
+            }
         });
     }
 
@@ -155,8 +151,8 @@ class BroadlinkDevice extends EventEmitter {
         this._sendPacket(0x65, payload);
     }
 
-    _onPayloadReceived(payload) {
-        // console.log('receive:' + payload.toString('hex'));
+    _onPayloadReceived(command, errCode, payload) {
+        // console.log('command:' + command + ' errCode:' + errCode + ' receive:' + payload.toString('hex'));
     }
 }
 

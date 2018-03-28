@@ -3,6 +3,127 @@ const dgram = require('dgram');
 const os = require('os');
 const crypto = require('crypto');
 
+const deviceTypeList = {
+    //sp1
+    '0x0': {
+        'name': 'Broadlink SP1',
+        'module': 'sp1',
+    },
+
+    //sp2
+    '0x2711': {
+        'name': 'Broadlink SP2',
+        'module': 'sp2',
+    },
+    '0x2719': {
+        'name': 'Honeywell SP2',
+        'module': 'sp2',
+    },
+    '0x7919': {
+        'name': 'Honeywell SP2',
+        'module': 'sp2',
+    },
+    '0x271a': {
+        'name': 'Honeywell SP2',
+        'module': 'sp2',
+    },
+    '0x791a': {
+        'name': 'Honeywell SP2',
+        'module': 'sp2',
+    },
+    '0x2720': {
+        'name': 'Broadlink SP Mini',
+        'module': 'sp2',
+    },
+    '0x2733': {
+        'name': 'OEM Branded SP Mini',
+        'module': 'sp2',
+    },
+    '0x273e': {
+        'name': 'OEM Branded SP Mini',
+        'module': 'sp2',
+    },
+    '0x753e': {
+        'name': 'Broadlink SP3',
+        'module': 'sp2',
+    },
+    '0x2728': {
+        'name': 'Broadlink SPMini 2',
+        'module': 'sp2',
+    },
+    '0x2736': {
+        'name': 'Broadlink SPMini Plus',
+        'module': 'sp2',
+    },
+
+    //rm2
+    '0x2712': {
+        'name': 'Broadlink RM2',
+        'module': 'rm2',
+    },
+    '0x2737': {
+        'name': 'Broadlink RM Mini',
+        'module': 'rm2',
+    },
+    '0x273d': {
+        'name': 'Broadlink RM Pro Phicomm',
+        'module': 'rm2',
+    },
+    '0x2783': {
+        'name': 'Broadlink RM2 Home Plus',
+        'module': 'rm2',
+    },
+    '0x277c': {
+        'name': 'Broadlink RM2 Home Plus GDT',
+        'module': 'rm2',
+    },
+    '0x272a': {
+        'name': 'Broadlink RM2 Pro Plus',
+        'module': 'rm2',
+    },
+    '0x2787': {
+        'name': 'Broadlink RM2 Pro Plus v2',
+        'module': 'rm2',
+    },
+    '0x278b': {
+        'name': 'Broadlink RM2 Pro Plus BL',
+        'module': 'rm2',
+    },
+    '0x278f': {
+        'name': 'Broadlink RM Mini Shate',
+        'module': 'rm2',
+    },
+
+    //a1
+    '0x2714': {
+        'name': 'Broadlink A1',
+        'module': 'a1',
+    },
+
+    //mp1
+    '0x4eb5': {
+        'name': 'Broadlink MP1',
+        'module': 'mp1',
+    },
+
+    //unknow
+    '0x279d': {
+        'name': 'Broadlink RM3 Pro Plus',
+        'module': 'unknow',
+    },
+    '0x27a9': {
+        'name': 'Broadlink RM3 Pro Plus v2',
+        'module': 'unknow',
+    },
+    '0x2722': {
+        'name': 'Broadlink S1 (SmartOne Alarm Kit)',
+        'module': 'unknow',
+    },
+    '0x4e4d': {
+        'name': 'Dooya DT360E (DOOYA_CURTAIN_V2) or Hysen Heating Controller',
+        'module': 'unknow',
+    },
+}
 
 class Broadlink extends EventEmitter {
     constructor() {
@@ -123,11 +244,16 @@ class Broadlink extends EventEmitter {
         message.copy(deviceType, 0x00, 0x35);
         message.copy(deviceType, 0x01, 0x34);
 
+        const deviceTypeKey = '0x' + deviceType.toString('hex');
+        const type = deviceTypeList[deviceTypeKey];
+
         let info = {
             address: host.address,
             port: host.port,
             mac: macAddress,
             type: deviceType,
+            name: type.name,
+            module: type.module,
         }
 
         this.emit('discover', info);
